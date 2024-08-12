@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/axelrhd/htmltemplater"
 )
@@ -13,25 +14,21 @@ var (
 )
 
 func main() {
-	// ht := htmltemplater.New(&htmltemplater.TemplaterOptions{
-	// 	ImportPath: "./templates",
-	// })
-	Tmpl = htmltemplater.New(nil)
+	Tmpl = htmltemplater.New()
+	Tmpl.StdFuncs = &template.FuncMap{
+		"cap": strings.ToLower,
+	}
 
-	t, err := Tmpl.AddPage("page/index", &[]string{"_layout", "partial/navbar"}, nil)
+	layout, err := Tmpl.GenerateLayout()
 	logFatal(err)
 
-	p, err := Tmpl.AddPartial("partial/navbar", nil)
+	index, err := layout.ParseFiles(Tmpl.GenerateTmplPaths("page/index")...)
 	logFatal(err)
 
-	err = t.Execute(os.Stdout, nil)
+	err = index.Execute(os.Stdout, map[string]any{
+		"User": "aXeL",
+	})
 	logFatal(err)
-
-	fmt.Printf("%+v\n", Tmpl)
-
-	err = p.ExecuteTemplate(os.Stdout, "navbar", nil)
-	logFatal(err)
-
 }
 
 func logFatal(err error) {
