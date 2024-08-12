@@ -8,30 +8,33 @@ import (
 	"github.com/axelrhd/htmltemplater"
 )
 
+var (
+	Tmpl *htmltemplater.HtmlTemplater
+)
+
 func main() {
 	// ht := htmltemplater.New(&htmltemplater.TemplaterOptions{
 	// 	ImportPath: "./templates",
 	// })
-	ht := htmltemplater.New(nil)
+	Tmpl = htmltemplater.New(nil)
 
-	fmt.Printf("%+v\n", ht)
-	ht.ReadFiles()
+	t, err := Tmpl.AddPage("page/index", &[]string{"_layout", "partial/navbar"}, nil)
+	logFatal(err)
 
-	for _, t := range ht.Templates {
-		fmt.Println(t)
-	}
+	p, err := Tmpl.AddPartial("partial/navbar", nil)
+	logFatal(err)
 
-	fmt.Printf("%+v\n", ht)
+	err = t.Execute(os.Stdout, nil)
+	logFatal(err)
 
-	tp, err := ht.PageTmpl("index", "partials/navbar")
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Printf("%+v\n", Tmpl)
 
-	fmt.Println(tp.Name())
-	fmt.Println(tp.DefinedTemplates())
+	err = p.ExecuteTemplate(os.Stdout, "navbar", nil)
+	logFatal(err)
 
-	err = tp.Execute(os.Stdout, nil)
+}
+
+func logFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}

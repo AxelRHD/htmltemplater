@@ -1,0 +1,10 @@
+{{ define "nav-login-btn" }}
+{{ if .User }}<button>Logout, {{ .User.Firstname }} {{ .User.Lastname }}</button>{{ else }}<button>Login</button>{{ end }}
+{{ end }}
+
+{{ define "navbar" }}
+<nav>Navigation</nav>
+
+{{ template "nav-login-btn" . }}
+{{ end }}
+
