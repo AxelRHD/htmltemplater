@@ -3,39 +3,43 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"log/slog"
+	"net/url"
 	"os"
-	"strings"
 
-	"github.com/axelrhd/htmltemplater"
+	tpl "github.com/axelrhd/htmltemplater"
 )
 
 var (
-	Tmpl htmltemplater.Templater
+	Prefix = "/app"
 )
 
 func main() {
-	Tmpl = *htmltemplater.New()
-	Tmpl.ImportPath = "../templates"
-	Tmpl.StdFuncs = &template.FuncMap{
-		"cap": strings.ToTitle,
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	tpl.SetImportPath("../templates")
+
+	stdFuncs := template.FuncMap{
+		"lnk": func(p string) string {
+			u, err := url.JoinPath(Prefix, p)
+			if err != nil {
+				return p
+			}
+
+			return u
+		},
 	}
 
-	fmt.Printf("%+v\n", Tmpl)
+	index, err := tpl.NewTemplateWithFuncs(stdFuncs, true, false, "page/index")
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
 
-	layout, err := Tmpl.GenerateLayout()
-	logFatal(err)
-	fmt.Println(layout.Tree)
+	fmt.Println(index.DefinedTemplates())
 
-	index, err := layout.ParseFiles(Tmpl.GenerateTmplPaths("page/index")...)
-	logFatal(err)
-
-	fmt.Printf("%+v\n", layout.DefinedTemplates())
-	fmt.Printf("%+v\n", index.DefinedTemplates())
-	fmt.Printf("%+v\n", Tmpl)
-}
-
-func logFatal(err error) {
+	err = index.Execute(os.Stdout, nil)
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
