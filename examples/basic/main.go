@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
-	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -10,29 +11,33 @@ import (
 )
 
 var (
-	Tmpl *htmltemplater.Templater
+	Tmpl htmltemplater.Templater
 )
 
 func main() {
-	Tmpl = htmltemplater.New()
+	Tmpl = *htmltemplater.New()
+	Tmpl.ImportPath = "../templates"
 	Tmpl.StdFuncs = &template.FuncMap{
-		"cap": strings.ToLower,
+		"cap": strings.ToTitle,
 	}
+
+	fmt.Printf("%+v\n", Tmpl)
 
 	layout, err := Tmpl.GenerateLayout()
 	logFatal(err)
+	fmt.Println(layout.Tree)
 
 	index, err := layout.ParseFiles(Tmpl.GenerateTmplPaths("page/index")...)
 	logFatal(err)
 
-	err = index.Execute(os.Stdout, map[string]any{
-		"User": "aXeL",
-	})
-	logFatal(err)
+	fmt.Printf("%+v\n", layout.DefinedTemplates())
+	fmt.Printf("%+v\n", index.DefinedTemplates())
+	fmt.Printf("%+v\n", Tmpl)
 }
 
 func logFatal(err error) {
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 }
