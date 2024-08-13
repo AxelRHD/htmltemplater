@@ -36,8 +36,9 @@ func init() {
 
 func NewTemplater(opts *TemplaterOptions) *Templater {
 	o := TemplaterOptions{
-		ImportPath:    "templates",
-		FileExtension: ".tmpl.html",
+		ImportPath: "templates",
+		// FileExtension: ".tmpl.html",
+		FileExtension: ".gotmpl",
 		Layout:        []string{"_layout"},
 	}
 
